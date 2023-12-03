@@ -7,7 +7,7 @@ import warnings
 from typing import List, Literal
 
 import mlflow
-import mlfoundry
+import backend.modules.metadata_store.mlfoundry_store as mlfoundry_store
 from pydantic import BaseModel
 
 from backend.modules.metadata_store.base import BaseMetadataStore
@@ -115,7 +115,7 @@ class MLFoundry(BaseMetadataStore):
         self.ml_repo_name = os.getenv("ML_REPO_NAME")
         if not self.ml_repo_name:
             raise Exception("ML_REPO_NAME environment variable is not set.")
-        self.client = mlfoundry.get_client()
+        self.client = mlfoundry_store.get_client()
         self.client.create_ml_repo(self.ml_repo_name)
 
     def create_collection(self, collection: CollectionCreate) -> Collection:

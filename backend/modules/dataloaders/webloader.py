@@ -9,6 +9,7 @@ from langchain.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from backend.modules.dataloaders.loader import BaseLoader
 from backend.utils.base import DocumentMetadata, LoadedDocument, SourceConfig
 from backend.utils.utils import generate_document_id
+from backend.utils.logger import logger
 
 
 class WebLoader(BaseLoader):
@@ -48,7 +49,7 @@ class WebLoader(BaseLoader):
             List[LoadedDocument]: A list of LoadedDocument objects containing metadata.
         """
         max_depth = source_config.dict().get("max_depth", 2)
-        print("WebLoader -> max_depth: ", max_depth)
+        logger.info("WebLoader -> max_depth: ", max_depth)
         loader = RecursiveUrlLoader(
             url=source_config.uri,
             max_depth=max_depth,
