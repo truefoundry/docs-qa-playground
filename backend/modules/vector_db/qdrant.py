@@ -6,12 +6,12 @@ from langchain.vectorstores.qdrant import Qdrant
 from qdrant_client import QdrantClient, models
 
 from backend.modules.vector_db.base import BaseVectorDB
-from backend.utils.base import VectorDBConfig
+from backend.utils.base import QdrantDBConfig
 from backend.utils.logger import logger
 
 
 class QdrantVectorDB(BaseVectorDB):
-    def __init__(self, config: VectorDBConfig, collection_name: str = None):
+    def __init__(self, config: QdrantDBConfig, collection_name: str = None):
         self.url = config.url
         self.api_key = config.api_key
         self.collection_name = collection_name

@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, Extra, Field, constr
 
@@ -42,11 +42,26 @@ class ParserConfig(BaseModel):
         extra = Extra.allow
 
 
-class VectorDBConfig(BaseModel):
-    provider: str
+class QdrantDBConfig(BaseModel):
+    provider: Literal["qdrant"]
     url: Optional[str] = None
     api_key: Optional[str] = None
-    config: Optional[dict] = None
+
+
+class ChromaDBConfig(BaseModel):
+    provider: Literal["chroma"]
+
+
+class WeaviateDBConfig(BaseModel):
+    provider: Literal["weaviate"]
+    url: Optional[str] = None
+    api_key: Optional[str] = None
+
+
+class VectorDBConfig(BaseModel):
+    __root__: Union[QdrantDBConfig, WeaviateDBConfig, ChromaDBConfig] = Field(
+        ..., discriminator="provider"
+    )
 
 
 class EmbeddingCacheConfig(BaseModel):

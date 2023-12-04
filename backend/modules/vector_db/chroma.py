@@ -5,11 +5,11 @@ from langchain.embeddings.base import Embeddings
 from langchain.vectorstores.chroma import Chroma
 
 from backend.modules.vector_db.base import BaseVectorDB
-from backend.utils.base import VectorDBConfig
+from backend.utils.base import ChromaDBConfig
 
 
 class ChromaVectorDB(BaseVectorDB):
-    def __init__(self, config: VectorDBConfig, collection_name: str = None):
+    def __init__(self, config: ChromaDBConfig, collection_name: str = None):
         self.collection_name = collection_name
         self.client = chromadb.Client()
 

@@ -3,7 +3,7 @@ import os
 import orjson
 from pydantic import BaseSettings
 
-from backend.utils.base import EmbeddingCacheConfig, VectorDBConfig
+from backend.utils.base import EmbeddingCacheConfig
 
 
 class Settings(BaseSettings):

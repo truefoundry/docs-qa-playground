@@ -6,7 +6,7 @@ from langchain.embeddings.base import Embeddings
 from langchain.vectorstores.weaviate import Weaviate
 
 from backend.modules.vector_db.base import BaseVectorDB
-from backend.utils.base import VectorDBConfig
+from backend.utils.base import WeaviateDBConfig
 
 
 def decapitalize(s):
@@ -16,7 +16,7 @@ def decapitalize(s):
 
 
 class WeaviateVectorDB(BaseVectorDB):
-    def __init__(self, config: VectorDBConfig, collection_name: str = None):
+    def __init__(self, config: WeaviateDBConfig, collection_name: str = None):
         self.url = config.url
         self.api_key = config.api_key
         if collection_name:
