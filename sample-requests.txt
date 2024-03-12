@@ -1,0 +1,73 @@
+# Get data sources
+curl -X 'GET' \
+  'http://localhost:8080/v1/data_source/' \
+  -H 'accept: application/json'
+
+# Add data sources -> This gives back data FQN that should be used in associating the data src to the collection 
+curl -X 'POST' \
+  'http://localhost:8080/v1/data_source/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "type": "mlfoundry",
+  "uri": "data-dir:truefoundry/prathamesh-merck/reindexing-exp",
+  "metadata": {}
+}'
+
+# Get collections
+curl -X 'GET' \
+  'http://localhost:8080/v1/collections/' \
+  -H 'accept: application/json'
+
+
+# Create collection
+curl -X 'POST' \
+  'http://localhost:8080/v1/collections/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "ps01",
+  "description": "Test collection ps02",
+  "embedder_config": {
+    "provider": "default",
+    "config": {
+      "model": "openai-devtest/text-embedding-ada-002"
+    }
+  },
+  "associated_data_sources": [
+    {
+      "data_source_fqn": "mlfoundry::data-dir:truefoundry/prathamesh-merck/reindexing-exp",
+      "parser_config": {
+        "chunk_size": 500,
+        "chunk_overlap": 0,
+        "parser_map": {
+          ".md": "MarkdownParser",
+          ".pdf": "PdfParserFast",
+          ".txt": "TextParser"
+        }
+      }
+    }
+  ]
+}'
+
+
+# Query - /answer/
+curl -X 'POST' \
+  'http://localhost:8080/retrievers/answer' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "collection_name": "ps01",
+  "retriever_config": {
+    "search_type": "similarity",
+    "k": 4,
+    "fetch_k": 20,
+    "filter": {}
+  },
+  "query": "What is a credit card",
+  "model_configuration": {
+    "name": "openai-devtest/gpt-3-5-turbo",
+    "parameters": {}
+  },
+  "prompt_template": "Here is the context information:\n\n'\'''\'''\''\n{context}\n'\'''\'''\''\n\nQuestion: {question}\nAnswer:"
+}'

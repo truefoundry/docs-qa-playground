@@ -17,3 +17,4 @@ tempDir/
 !**/.env.example
 .ipynb_checkpoints/
 deploy.*.py
+ragenv
