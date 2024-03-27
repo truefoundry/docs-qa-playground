@@ -9,6 +9,8 @@ from backend.constants import DATA_POINT_FQN_METADATA_KEY, DEFAULT_BATCH_SIZE_FO
 from backend.modules.vector_db.base import BaseVectorDB
 from backend.types import DataPointVector, VectorDBConfig
 
+from backend.logger import logger
+
 
 def decapitalize(s):
     if not s:
@@ -18,16 +20,17 @@ def decapitalize(s):
 
 class WeaviateVectorDB(BaseVectorDB):
     def __init__(self, config: VectorDBConfig):
-        self.url = config.url
-        self.api_key = config.api_key
-        self.weaviate_client = weaviate.Client(
-            url=self.url,
-            **(
-                {"auth_client_secret": weaviate.AuthApiKey(api_key=self.api_key)}
-                if self.api_key
-                else {}
-            ),
-        )
+        if config.local is True:
+            self.url = config.url
+            self.api_key = config.api_key
+            self.weaviate_client = weaviate.Client(
+                url=self.url,
+                **(
+                    {"auth_client_secret": weaviate.AuthApiKey(api_key=self.api_key)}
+                    if self.api_key
+                    else {}
+                ),
+            )
 
     def create_collection(self, collection_name: str, embeddings: Embeddings):
         self.weaviate_client.schema.create_class(
@@ -59,6 +62,8 @@ class WeaviateVectorDB(BaseVectorDB):
         Returns:
         - None
         """
+        # TODO: Add documents in incremental format
+        # Ref: upsert_documents from qdrant.py
         Weaviate.from_documents(
             documents=documents,
             embedding=embeddings,
@@ -74,7 +79,9 @@ class WeaviateVectorDB(BaseVectorDB):
         self,
         collection_name: str,
     ):
-        return self.weaviate_client.schema.delete_class(collection_name.capitalize())
+        logger.debug(f"[Weaviate Vector Store] Deleting {collection_name} collection")
+        self.weaviate_client.schema.delete_class(collection_name.capitalize())
+        logger.debug(f"[Weaviate Vector Store] Deleted {collection_name} collection")
 
     def get_vector_store(self, collection_name: str, embeddings: Embeddings):
         return Weaviate(
