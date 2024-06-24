@@ -148,7 +148,6 @@ async def _sync_data_source_to_collection(
     Returns:
         None
     """
-
     client = await get_client()
 
     failed_data_point_fqns = []
@@ -219,7 +218,7 @@ async def ingest_data_points(
 
     """
     embeddings = model_gateway.get_embedder_from_model_config(
-        model_name=inputs.embedder_config.model_config.name
+        model_name=inputs.embedder_config.model_configuration.name
     )
     documents_to_be_upserted = []
     logger.info(

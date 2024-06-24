@@ -80,7 +80,7 @@ async def create_collection(collection: CreateCollectionDto):
         VECTOR_STORE_CLIENT.create_collection(
             collection_name=collection.name,
             embeddings=model_gateway.get_embedder_from_model_config(
-                model_name=collection.embedder_config.model_config.name
+                model_name=collection.embedder_config.model_configuration.name
             ),
         )
         logger.info(f"Created collection... {created_collection}")

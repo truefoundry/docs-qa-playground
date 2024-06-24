@@ -4,7 +4,6 @@ from typing import Any
 from pydantic import ConfigDict, model_validator
 from pydantic_settings import BaseSettings
 
-from backend.logger import logger
 from backend.types import MetadataStoreConfig, VectorDBConfig
 
 
@@ -57,7 +56,8 @@ class Settings(BaseSettings):
                 tfy_llm_gateway_url = f"{tfy_host.rstrip('/')}/api/llm"
                 values["TFY_LLM_GATEWAY_URL"] = tfy_llm_gateway_url
         else:
-            logger.warning(
+            # logger has not been initialized at this point, hence the print
+            print(
                 f"[Validation Skipped] Pydantic v2 validator received "
                 f"non dict values of type {type(values)}"
             )

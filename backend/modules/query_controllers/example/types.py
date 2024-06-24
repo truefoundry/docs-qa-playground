@@ -1,6 +1,6 @@
 from typing import Any, ClassVar, Optional, Sequence
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from qdrant_client.models import Filter as QdrantFilter
 
 from backend.logger import logger
@@ -123,6 +123,9 @@ class ExampleQueryInput(BaseModel):
     Requires a collection name, retriever configuration, query, LLM configuration and prompt template.
     """
 
+    # TODO (chiragjn): This is not the best idea
+    model_config = ConfigDict(protected_namespaces=tuple())
+
     collection_name: str = Field(
         default=None,
         title="Collection name on which to search",
@@ -130,7 +133,6 @@ class ExampleQueryInput(BaseModel):
 
     query: str = Field(title="Question to search for")
 
-    # TODO (chiragjn): Pydantic v2 does not like fields that begin with model_*
     model_configuration: ModelConfig
 
     prompt_template: str = Field(

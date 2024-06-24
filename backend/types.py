@@ -123,8 +123,13 @@ class EmbedderConfig(BaseModel):
     Embedder configuration
     """
 
-    # TODO (chiragjn): Pydantic v2 does not like fields that begin with model_*
-    model_config: ModelConfig
+    # TODO (chiragjn): This is not the best idea
+    model_config = ConfigDict(protected_namespaces=tuple())
+
+    # Pydantic v2 reserves model_config for itself
+    model_configuration: ModelConfig = Field(
+        validation_alias="model_config", serialization_alias="model_config"
+    )
     config: Optional[dict[str, Any]] = Field(
         title="Configuration for the embedder", default_factory=dict
     )
