@@ -148,7 +148,6 @@ async def _sync_data_source_to_collection(
     Returns:
         None
     """
-
     client = await get_client()
 
     failed_data_point_fqns = []
@@ -219,7 +218,7 @@ async def ingest_data_points(
 
     """
     embeddings = model_gateway.get_embedder_from_model_config(
-        model_name=inputs.embedder_config.model_config.name
+        model_name=inputs.embedder_config.model_configuration.name
     )
     documents_to_be_upserted = []
     logger.info(
@@ -269,7 +268,7 @@ async def ingest_data_points(
                     f"Processing done! Deleting file {loaded_data_point.local_filepath}"
                 )
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"Failed to delete file {loaded_data_point.local_filepath} after processing. Error: {e}"
             )
         # delete the local_filepath from the loaded_data_point object
@@ -280,7 +279,7 @@ async def ingest_data_points(
                     f"Processing done! Deleting file {loaded_data_point.local_metadata_file_path}"
                 )
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"Failed to delete file {loaded_data_point.local_metadata_file_path} after processing. Error: {e}"
             )
 
@@ -310,7 +309,7 @@ async def ingest_data(request: IngestDataToCollectionDto):
 
         # convert to pydantic model if not already -> For prisma models
         if not isinstance(collection, Collection):
-            collection = Collection(**collection.dict())
+            collection = Collection(**collection.model_dump())
 
         if not collection:
             logger.error(

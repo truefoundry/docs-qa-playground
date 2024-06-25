@@ -1,9 +1,10 @@
 import enum
 import uuid
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, constr, root_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from typing_extensions import Annotated
 
 from backend.constants import FQN_SEPARATOR
 
@@ -26,7 +27,7 @@ class DataPoint(BaseModel):
         data_point_fqn (str): Fully qualified name for the data point with respect to the data source
         data_point_uri (str): URI for the data point for given data source. It could be url, file path or any other identifier
         data_point_hash (str): Hash of the data point for the given data source that is guaranteed to be updated for any update in data point at source
-        metadata (Optional[Dict[str, str]]): Additional metadata for the data point
+        metadata (Optional[dict[str, str]]): Additional metadata for the data point
     """
 
     data_source_fqn: str = Field(
@@ -41,7 +42,8 @@ class DataPoint(BaseModel):
         title="Hash of the data point for the given data source that is guaranteed to be updated for any update in data point at source",
     )
 
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, Any]] = Field(
+        None,
         title="Additional metadata for the data point",
     )
 
@@ -83,9 +85,11 @@ class LoadedDataPoint(DataPoint):
         title="Local file path of the loaded data point",
     )
     file_extension: Optional[str] = Field(
+        None,
         title="File extension of the loaded data point",
     )
     local_metadata_file_path: Optional[str] = Field(
+        None,
         title="Local file path of the metadata file",
     )
 
@@ -101,24 +105,17 @@ class ModelType(str, Enum):
 
 class ModelConfig(BaseModel):
     name: str
-    type: Optional[ModelType]
-    parameters: Optional[Dict[str, Any]] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "name": self.name,
-            "type": self.type,
-            "parameters": self.parameters,
-        }
+    type: Optional[ModelType] = None
+    parameters: dict[str, Any] = Field(default_factory=dict)
 
 
 class ModelProviderConfig(BaseModel):
     provider_name: str
     api_format: str
-    llm_model_ids: List[str]
-    embedding_model_ids: List[str]
-    api_key_env_var: str
     base_url: Optional[str] = None
+    api_key_env_var: str
+    llm_model_ids: list[str] = Field(default_factory=list)
+    embedding_model_ids: list[str] = Field(default_factory=list)
 
 
 class EmbedderConfig(BaseModel):
@@ -126,9 +123,15 @@ class EmbedderConfig(BaseModel):
     Embedder configuration
     """
 
-    model_config: ModelConfig
-    config: Optional[Dict[str, Any]] = Field(
-        title="Configuration for the embedder", default={}
+    # TODO (chiragjn): This is not the best idea
+    model_config = ConfigDict(protected_namespaces=tuple())
+
+    # Pydantic v2 reserves model_config for itself
+    model_configuration: ModelConfig = Field(
+        validation_alias="model_config", serialization_alias="model_config"
+    )
+    config: Optional[dict[str, Any]] = Field(
+        title="Configuration for the embedder", default_factory=dict
     )
 
 
@@ -138,20 +141,17 @@ class ParserConfig(BaseModel):
     """
 
     chunk_size: int = Field(title="Chunk Size for data parsing", ge=1, default=1000)
-
     chunk_overlap: int = Field(title="Chunk Overlap for indexing", ge=0, default=20)
-
-    parser_map: Dict[str, str] = Field(
+    parser_map: dict[str, str] = Field(
         title="Mapping of file extensions to parsers",
         default={
             ".md": "MarkdownParser",
             ".pdf": "PdfParserFast",
         },
     )
-
-    additional_config: Optional[Dict[str, Any]] = Field(
+    additional_config: Optional[dict[str, Any]] = Field(
         title="Additional optional configuration for the parser",
-        default={"key": "value"},
+        default_factory=dict,
     )
 
 
@@ -164,7 +164,7 @@ class VectorDBConfig(BaseModel):
     local: bool = False
     url: Optional[str] = None
     api_key: Optional[str] = None
-    config: Optional[dict] = None
+    config: Optional[dict] = Field(default_factory=dict)
 
 
 class QdrantClientConfig(BaseModel):
@@ -172,8 +172,7 @@ class QdrantClientConfig(BaseModel):
     Qdrant extra configuration
     """
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
     port: Optional[int] = None
     grpc_port: int = 6334
@@ -198,7 +197,8 @@ class RetrieverConfig(BaseModel):
 
     search_type: Literal["mmr", "similarity"] = Field(
         default="similarity",
-        title="""Defines the type of search that the Retriever should perform. Can be "similarity" (default), "mmr", or "similarity_score_threshold".""",
+        title="""Defines the type of search that the Retriever should perform. \
+        Can be "similarity" (default), "mmr", or "similarity_score_threshold".""",
     )
     k: int = Field(
         default=4,
@@ -267,7 +267,7 @@ class BaseDataIngestionRun(BaseModel):
         title="Data ingestion mode for the data ingestion",
     )
 
-    raise_error_on_failure: Optional[bool] = Field(
+    raise_error_on_failure: bool = Field(
         title="Flag to configure weather to raise error on failure or not. Default is True",
         default=True,
     )
@@ -282,6 +282,7 @@ class DataIngestionRun(BaseDataIngestionRun):
         title="Name of the data ingestion run",
     )
     status: Optional[DataIngestionRunStatus] = Field(
+        None,
         title="Status of the data ingestion run",
     )
 
@@ -297,18 +298,13 @@ class BaseDataSource(BaseModel):
     uri: str = Field(
         title="A unique identifier for the data source",
     )
-    metadata: Optional[Dict[str, Any]] = Field(
-        title="Additional config for your data source"
+    metadata: Optional[dict[str, Any]] = Field(
+        None, title="Additional config for your data source"
     )
 
     @property
     def fqn(self):
         return f"{FQN_SEPARATOR}".join([self.type, self.uri])
-
-    @root_validator
-    def validate_fqn(cls, values: Dict) -> Dict:
-        values["fqn"] = f"{FQN_SEPARATOR}".join([values["type"], values["uri"]])
-        return values
 
 
 class CreateDataSource(BaseDataSource):
@@ -331,7 +327,7 @@ class AssociatedDataSources(BaseModel):
         title="Parser configuration for the data transformation", default_factory=dict
     )
     data_source: Optional[DataSource] = Field(
-        title="Data source associated with the collection"
+        None, title="Data source associated with the collection"
     )
 
 
@@ -345,6 +341,7 @@ class IngestDataToCollectionDto(BaseModel):
     )
 
     data_source_fqn: Optional[str] = Field(
+        None,
         title="Fully qualified name of the data source",
     )
 
@@ -353,7 +350,7 @@ class IngestDataToCollectionDto(BaseModel):
         title="Data ingestion mode for the data ingestion",
     )
 
-    raise_error_on_failure: Optional[bool] = Field(
+    raise_error_on_failure: bool = Field(
         title="Flag to configure weather to raise error on failure or not. Default is True",
         default=True,
     )
@@ -416,11 +413,12 @@ class BaseCollection(BaseModel):
     Base collection configuration
     """
 
-    name: constr(regex=r"^[a-z][a-z0-9-]*$") = Field(  # type: ignore
+    name: Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9-]*$")] = Field(  # type: ignore
         title="a unique name to your collection",
         description="Should only contain lowercase alphanumeric character and hypen, should start with alphabet",
     )
     description: Optional[str] = Field(
+        None,
         title="a description for your collection",
     )
     embedder_config: EmbedderConfig = Field(
@@ -433,23 +431,23 @@ class CreateCollection(BaseCollection):
 
 
 class Collection(BaseCollection):
-    associated_data_sources: Dict[str, AssociatedDataSources] = Field(
+    associated_data_sources: dict[str, AssociatedDataSources] = Field(
         title="Data sources associated with the collection", default_factory=dict
     )
 
 
 class CreateCollectionDto(CreateCollection):
-    associated_data_sources: Optional[List[AssociateDataSourceWithCollection]] = Field(
-        title="Data sources associated with the collection"
+    associated_data_sources: Optional[list[AssociateDataSourceWithCollection]] = Field(
+        None, title="Data sources associated with the collection"
     )
 
 
 class UploadToDataDirectoryDto(BaseModel):
-    filepaths: List[str]
+    filepaths: list[str]
     # allow only small case alphanumeric and hyphen, should contain at least one alphabet and begin with alphabet
     upload_name: str = Field(
         title="Name of the upload",
-        regex=r"^[a-z][a-z0-9-]*$",
+        pattern=r"^[a-z][a-z0-9-]*$",
         default=str(uuid.uuid4()),
     )
 

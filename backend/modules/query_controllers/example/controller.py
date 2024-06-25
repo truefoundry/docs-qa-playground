@@ -87,12 +87,12 @@ class BasicRAGQueryController:
             raise HTTPException(status_code=404, detail="Collection not found")
 
         if not isinstance(collection, Collection):
-            collection = Collection(**collection.dict())
+            collection = Collection(**collection.model_dump())
 
         return VECTOR_STORE_CLIENT.get_vector_store(
             collection_name=collection.name,
             embeddings=model_gateway.get_embedder_from_model_config(
-                model_name=collection.embedder_config.model_config.name
+                model_name=collection.embedder_config.model_configuration.name
             ),
         )
 
@@ -132,7 +132,7 @@ class BasicRAGQueryController:
                     detail="Reranker service is not available",
                 )
         except Exception as e:
-            logger.error(f"Error in getting contextual compression retriever: {e}")
+            logger.exception(f"Error in getting contextual compression retriever: {e}")
             raise HTTPException(
                 status_code=500,
                 detail="Error in getting contextual compression retriever",
@@ -324,7 +324,7 @@ class BasicRAGQueryController:
 #   "stream": True
 # }
 
-# data = ExampleQueryInput(**payload).dict()
+# data = ExampleQueryInput(**payload).model_dump()
 # ENDPOINT_URL = 'http://localhost:8000/retrievers/example-app/answer'
 
 

@@ -4,10 +4,9 @@ Source: https://github.com/dmontagu/fastapi-utils/blob/master/fastapi_utils/cbv.
 """
 
 import inspect
-from typing import Any, Callable, List, Type, TypeVar, Union, get_type_hints
+from typing import Any, Callable, ClassVar, List, Type, TypeVar, Union, get_type_hints
 
 from fastapi import APIRouter, Depends
-from pydantic.typing import is_classvar
 from starlette.routing import Route, WebSocketRoute
 
 T = TypeVar("T")
@@ -59,7 +58,8 @@ def _init_cbv(cls: Type[Any]) -> None:
     ]
     dependency_names: List[str] = []
     for name, hint in get_type_hints(cls).items():
-        if is_classvar(hint):
+        # TODO (chiragjn): Verify this
+        if getattr(hint, "__origin__", None) is ClassVar:
             continue
         parameter_kwargs = {"default": getattr(cls, name, Ellipsis)}
         dependency_names.append(name)
@@ -127,13 +127,13 @@ def query_controller(tag: str = None):
         for name, method in cls.__dict__.items():
             if callable(method) and hasattr(method, "method"):
                 # Check if method is decorated with an HTTP method decorator
-                assert (
-                    hasattr(method, "__path__") and method.__path__
-                ), f"Missing path for method {name}"
+                if not hasattr(method, "__path__") or not method.__path__:
+                    raise ValueError(f"Missing path for method {name}")
 
                 http_method = method.method
                 # Ensure that the method is a valid HTTP method
-                assert http_method in http_method_names, f"Invalid method {http_method}"
+                if http_method not in http_method_names:
+                    raise ValueError(f"Invalid method {http_method}")
                 if prefix:
                     method.__path__ = prefix + method.__path__
                 if not method.__path__.startswith("/"):

@@ -17,7 +17,7 @@ async def get_data_source():
         client = await get_client()
         data_sources = await client.aget_data_sources()
         return JSONResponse(
-            content={"data_sources": [obj.dict() for obj in data_sources]}
+            content={"data_sources": [obj.model_dump() for obj in data_sources]}
         )
     except Exception as exp:
         logger.exception("Failed to get data source")
@@ -45,7 +45,7 @@ async def add_data_source(
         client = await get_client()
         created_data_source = await client.acreate_data_source(data_source=data_source)
         return JSONResponse(
-            content={"data_source": created_data_source.dict()}, status_code=201
+            content={"data_source": created_data_source.model_dump()}, status_code=201
         )
     except HTTPException as exp:
         raise exp

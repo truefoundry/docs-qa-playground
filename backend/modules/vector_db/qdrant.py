@@ -17,7 +17,7 @@ BATCH_SIZE = 1000
 
 class QdrantVectorDB(BaseVectorDB):
     def __init__(self, config: VectorDBConfig):
-        logger.debug(f"Connecting to qdrant using config: {config.dict()}")
+        logger.debug(f"Connecting to qdrant using config: {config.model_dump()}")
         if config.local is True:
             # TODO: make this path customizable
             self.qdrant_client = QdrantClient(
@@ -28,7 +28,7 @@ class QdrantVectorDB(BaseVectorDB):
             api_key = config.api_key
             if not api_key:
                 api_key = None
-            qdrant_kwargs = QdrantClientConfig.parse_obj(config.config or {})
+            qdrant_kwargs = QdrantClientConfig.model_validate(config.config or {})
             if url.startswith("http://") or url.startswith("https://"):
                 if qdrant_kwargs.port is None:
                     parsed_port = urlparse(url).port
@@ -37,7 +37,7 @@ class QdrantVectorDB(BaseVectorDB):
                     else:
                         qdrant_kwargs.port = 443 if url.startswith("https://") else 6333
             self.qdrant_client = QdrantClient(
-                url=url, api_key=api_key, **qdrant_kwargs.dict()
+                url=url, api_key=api_key, **qdrant_kwargs.model_dump()
             )
 
     def create_collection(self, collection_name: str, embeddings: Embeddings):

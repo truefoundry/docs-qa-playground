@@ -29,7 +29,7 @@ async def get_collections():
         if collections is None:
             return JSONResponse(content={"collections": []})
         return JSONResponse(
-            content={"collections": [obj.dict() for obj in collections]}
+            content={"collections": [obj.model_dump() for obj in collections]}
         )
     except Exception as exp:
         logger.exception("Failed to get collection")
@@ -55,7 +55,7 @@ async def get_collection_by_name(collection_name: str = Path(title="Collection n
         collection = await client.aget_collection_by_name(collection_name)
         if collection is None:
             return JSONResponse(content={"collection": []})
-        return JSONResponse(content={"collection": collection.dict()})
+        return JSONResponse(content={"collection": collection.model_dump()})
     except HTTPException as exp:
         raise exp
     except Exception as exp:
@@ -80,7 +80,7 @@ async def create_collection(collection: CreateCollectionDto):
         VECTOR_STORE_CLIENT.create_collection(
             collection_name=collection.name,
             embeddings=model_gateway.get_embedder_from_model_config(
-                model_name=collection.embedder_config.model_config.name
+                model_name=collection.embedder_config.model_configuration.name
             ),
         )
         logger.info(f"Created collection... {created_collection}")
@@ -98,7 +98,7 @@ async def create_collection(collection: CreateCollectionDto):
                 collection_name=created_collection.name
             )
         return JSONResponse(
-            content={"collection": created_collection.dict()}, status_code=201
+            content={"collection": created_collection.model_dump()}, status_code=201
         )
     except HTTPException as exp:
         raise exp
@@ -121,7 +121,7 @@ async def associate_data_source_to_collection(
                 parser_config=request.parser_config,
             ),
         )
-        return JSONResponse(content={"collection": collection.dict()})
+        return JSONResponse(content={"collection": collection.model_dump()})
     except HTTPException as exp:
         raise exp
     except Exception as exp:
@@ -140,7 +140,7 @@ async def unassociate_data_source_from_collection(
             collection_name=request.collection_name,
             data_source_fqn=request.data_source_fqn,
         )
-        return JSONResponse(content={"collection": collection.dict()})
+        return JSONResponse(content={"collection": collection.model_dump()})
     except HTTPException as exp:
         raise exp
     except Exception as exp:
@@ -182,7 +182,9 @@ async def list_data_ingestion_runs(request: ListDataIngestionRunsDto):
         request.collection_name, request.data_source_fqn
     )
     return JSONResponse(
-        content={"data_ingestion_runs": [obj.dict() for obj in data_ingestion_runs]}
+        content={
+            "data_ingestion_runs": [obj.model_dump() for obj in data_ingestion_runs]
+        }
     )
 
 

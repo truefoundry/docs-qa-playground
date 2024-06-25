@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
+from backend.settings import settings
 
-# load environment variables
-load_dotenv()
+settings.LOG_LEVEL

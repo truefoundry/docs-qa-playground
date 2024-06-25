@@ -90,7 +90,7 @@ def migrate_collection(
                     "associated_data_sources"
                 ).items()
             ],
-        ).dict()
+        ).model_dump()
 
         logger.debug(
             f"Creating '{dest_collection.get('name')}' collection at destination"

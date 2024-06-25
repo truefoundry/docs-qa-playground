@@ -9,7 +9,8 @@ uvicorn==0.23.2
 fastapi==0.109.1
 qdrant-client==1.9.0
 python-dotenv==1.0.1
-pydantic==1.10.13
+pydantic==2.7.4
+pydantic-settings==2.3.3
 orjson==3.9.15
 PyMuPDF==1.23.6
 redis==5.0.1

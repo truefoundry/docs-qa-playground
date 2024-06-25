@@ -168,7 +168,7 @@ class SingleStoreVectorDB(BaseVectorDB):
                 f"[SingleStore] Added {len(documents)} documents to collection {collection_name}"
             )
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"[SingleStore] Failed to add documents to collection {collection_name}: {e}"
             )
 
@@ -180,11 +180,11 @@ class SingleStoreVectorDB(BaseVectorDB):
                 cur.execute("SHOW TABLES")
                 return [row[0] for row in cur.fetchall()]
             except Exception as e:
-                logger.error(f"[SingleStore] Failed to get collections: {e}")
+                logger.exception(f"[SingleStore] Failed to get collections: {e}")
             finally:
                 cur.close()
         except Exception as e:
-            logger.error(f"[SingleStore] Failed to get collections: {e}")
+            logger.exception(f"[SingleStore] Failed to get collections: {e}")
         finally:
             conn.close()
 
@@ -196,13 +196,13 @@ class SingleStoreVectorDB(BaseVectorDB):
                 cur.execute(f"DROP TABLE {collection_name}")
                 logger.debug(f"[SingleStore] Deleted collection {collection_name}")
             except Exception as e:
-                logger.error(
+                logger.exception(
                     f"[SingleStore] Failed to delete collection {collection_name}: {e}"
                 )
             finally:
                 cur.close()
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"[SingleStore] Failed to delete collection {collection_name}: {e}"
             )
         finally:
@@ -256,7 +256,7 @@ class SingleStoreVectorDB(BaseVectorDB):
                         )
                     )
         except Exception as e:
-            logger.error(f"[SingleStore] Failed to list data point vectors: {e}")
+            logger.exception(f"[SingleStore] Failed to list data point vectors: {e}")
         finally:
             conn.close()
 
@@ -293,6 +293,8 @@ class SingleStoreVectorDB(BaseVectorDB):
                     f"[SingleStore] Deleted {vectors_to_be_deleted_count} data point vectors"
                 )
             except Exception as e:
-                logger.error(f"[SingleStore] Failed to delete data point vectors: {e}")
+                logger.exception(
+                    f"[SingleStore] Failed to delete data point vectors: {e}"
+                )
             finally:
                 conn.close()
