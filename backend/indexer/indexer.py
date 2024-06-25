@@ -268,7 +268,7 @@ async def ingest_data_points(
                     f"Processing done! Deleting file {loaded_data_point.local_filepath}"
                 )
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"Failed to delete file {loaded_data_point.local_filepath} after processing. Error: {e}"
             )
         # delete the local_filepath from the loaded_data_point object
@@ -279,7 +279,7 @@ async def ingest_data_points(
                     f"Processing done! Deleting file {loaded_data_point.local_metadata_file_path}"
                 )
         except Exception as e:
-            logger.error(
+            logger.exception(
                 f"Failed to delete file {loaded_data_point.local_metadata_file_path} after processing. Error: {e}"
             )
 

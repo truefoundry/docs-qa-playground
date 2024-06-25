@@ -146,7 +146,7 @@ class MultiModalRAGQueryController:
                 )
 
         except Exception as e:
-            logger.error(f"Error in getting contextual compression retriever: {e}")
+            logger.exception(f"Error in getting contextual compression retriever: {e}")
             raise HTTPException(
                 status_code=500,
                 detail="Error in getting contextual compression retriever",
@@ -300,7 +300,7 @@ class MultiModalRAGQueryController:
             try:
                 prompt = request.prompt_template.format(question=request.query)
             except Exception as e:
-                logger.error(f"Error in formatting prompt: {e}")
+                logger.exception(f"Error in formatting prompt: {e}")
                 logger.info(f"Using default prompt")
                 prompt = PROMPT.format(question=request.query)
 

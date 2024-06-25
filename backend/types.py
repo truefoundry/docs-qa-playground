@@ -105,7 +105,7 @@ class ModelType(str, Enum):
 
 class ModelConfig(BaseModel):
     name: str
-    type: ModelType
+    type: Optional[ModelType] = None
     parameters: dict[str, Any] = Field(default_factory=dict)
 
 

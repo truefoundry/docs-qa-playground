@@ -132,7 +132,7 @@ class BasicRAGQueryController:
                     detail="Reranker service is not available",
                 )
         except Exception as e:
-            logger.error(f"Error in getting contextual compression retriever: {e}")
+            logger.exception(f"Error in getting contextual compression retriever: {e}")
             raise HTTPException(
                 status_code=500,
                 detail="Error in getting contextual compression retriever",

@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 import warnings
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import mlflow
 from fastapi import HTTPException
@@ -55,7 +55,7 @@ class TrueFoundry(BaseMetadataStore):
 
     def _get_run_by_name(
         self, run_name: str, no_cache: bool = False
-    ) -> ml.MlFoundryRun | None:
+    ) -> Optional[ml.MlFoundryRun]:
         """
         Cache the runs to avoid too many requests to the backend.
         """
@@ -131,7 +131,7 @@ class TrueFoundry(BaseMetadataStore):
 
     def _get_artifact_metadata_ml_run(
         self, run: ml.MlFoundryRun
-    ) -> ml.ArtifactVersion | None:
+    ) -> Optional[ml.ArtifactVersion]:
         params = run.get_params()
         metadata_artifact_fqn = params.get("metadata_artifact_fqn")
         if not metadata_artifact_fqn:
@@ -174,7 +174,7 @@ class TrueFoundry(BaseMetadataStore):
 
     def get_collection_by_name(
         self, collection_name: str, no_cache: bool = True
-    ) -> Collection | None:
+    ) -> Optional[Collection]:
         """Get collection from given collection name."""
         logger.debug(f"[Metadata Store] Getting collection with name {collection_name}")
         ml_run = self._get_run_by_name(run_name=collection_name, no_cache=no_cache)
@@ -327,7 +327,7 @@ class TrueFoundry(BaseMetadataStore):
         )
         return created_data_source
 
-    def get_data_source_from_fqn(self, fqn: str) -> DataSource | None:
+    def get_data_source_from_fqn(self, fqn: str) -> Optional[DataSource]:
         logger.debug(f"[Metadata Store] Getting data_source by fqn {fqn}")
         runs = self.client.search_runs(
             ml_repo=self.ml_repo_name,
@@ -394,7 +394,7 @@ class TrueFoundry(BaseMetadataStore):
 
     def get_data_ingestion_run(
         self, data_ingestion_run_name: str, no_cache: bool = False
-    ) -> DataIngestionRun | None:
+    ) -> Optional[DataIngestionRun]:
         logger.debug(
             f"[Metadata Store] Getting ingestion run {data_ingestion_run_name}"
         )
@@ -573,7 +573,7 @@ class TrueFoundry(BaseMetadataStore):
                     }
                 )
             except Exception as e:
-                logger.error(f"Error in listing data sources: {e}")
+                logger.exception(f"Error in listing data sources: {e}")
                 continue
         return data_sources
 
