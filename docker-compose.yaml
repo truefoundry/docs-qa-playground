@@ -52,7 +52,7 @@ services:
             - cognita-docker
 
     infinity-server:
-        image: michaelf34/infinity:0.0.50
+        image: michaelf34/infinity:0.0.51
         pull_policy: if_not_present
         restart: unless-stopped
         container_name: infinity

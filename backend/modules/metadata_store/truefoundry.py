@@ -189,6 +189,21 @@ class TrueFoundry(BaseMetadataStore):
         logger.debug(f"[Metadata Store] Fetched collection with name {collection_name}")
         return collection
 
+    def get_retrieve_collection_by_name(
+        self, collection_name: str, no_cache: bool = True
+    ) -> Collection | None:
+        """Get collection from given collection name. Used during retrieval"""
+        logger.debug(f"[Metadata Store] Getting collection with name {collection_name}")
+        ml_run = self._get_run_by_name(run_name=collection_name, no_cache=no_cache)
+        if not ml_run:
+            logger.debug(
+                f"[Metadata Store] Collection with name {collection_name} not found"
+            )
+            return None
+        collection = Collection.parse_obj(self._get_entity_from_run(run=ml_run))
+        logger.debug(f"[Metadata Store] Fetched collection with name {collection_name}")
+        return collection
+
     def get_collections(self) -> List[Collection]:
         """Get all the collections for the given client"""
         logger.debug(f"[Metadata Store] Listing all collection")

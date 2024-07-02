@@ -52,6 +52,14 @@ class BaseMetadataStore(ABC):
         """
         raise NotImplementedError()
 
+    def get_retrieve_collection_by_name(
+        self, collection_name: str, no_cache: bool = True
+    ) -> Optional[Collection]:
+        """
+        Get a collection from the metadata store by name used during retrieval phase
+        """
+        raise NotImplementedError()
+
     async def aget_collection_by_name(
         self, collection_name: str, no_cache: bool = True
     ) -> Optional[Collection]:
@@ -61,6 +69,19 @@ class BaseMetadataStore(ABC):
         return await run_in_executor(
             None,
             self.get_collection_by_name,
+            collection_name=collection_name,
+            no_cache=no_cache,
+        )
+
+    async def aget_retrieve_collection_by_name(
+        self, collection_name: str, no_cache: bool = True
+    ) -> Optional[Collection]:
+        """
+        Get a collection from the metadata store by name used during retrieval phase
+        """
+        return await run_in_executor(
+            None,
+            self.get_retrieve_collection_by_name,
             collection_name=collection_name,
             no_cache=no_cache,
         )
